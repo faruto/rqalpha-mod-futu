@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2017 Futu Securities
+# Copyright 2017 Futu, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ setup(
     version=version,
     description='A mod for RQAlpha to connect with futuquant to implement US/HK stock quant trading',
     keywords='RQAlpha Back-testing futuquant Futu HK/US Stock Quant Trading API Mod',
-    author='Futu Securities',
+    author='Futu, Inc.',
     author_email='ftdev@futunn.com',
     url='https://github.com/FutunnOpen/rqalpha-mod-futu',
     license='Apache License 2.0',
