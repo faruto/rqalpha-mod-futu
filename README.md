@@ -29,15 +29,15 @@ pip install futuquant
 **4. 安装rqalpha-mod-rqalpha**
 
 ```
-rqalpha mod install futu				# 安装futu mod
-rqalpha mod list						# 查看当前有哪些mod, 如果安装成功，应该会看到futu的mod
-rqalpha mod enable futu  				# 开启futu的mod
-rqalpha mod disable sys_simulation		# 关闭sys_simulation
+rqalpha mod install futu            # 安装futu mod
+rqalpha mod list                    # 查看当前有哪些mod, 如果安装成功，应该会看到futu的mod
+rqalpha mod enable futu             # 开启futu的mod
+rqalpha mod disable sys_simulation  # 关闭sys_simulation
 ```
 
 **5. 开始编写策略**
 
-在examples文件夹中编写你自己的策略文件mystrategy.py。修改debug_run_file.py中的配置如下。
+在examples文件夹中编写你自己的策略文件 mystrategy.py。修改debug_run_file.py中的配置如下。
 
 ```
 # -*- coding: utf-8 -*-
@@ -82,5 +82,3 @@ run_file(strategy_file_path, config)
 - 港股下单不支持市价单，只支持限价单
 
 - 历史数据需要用户本地下载，历史K线下载指引文档参见[历史K线数据下载指引](https://futunnopen.github.io/futuquant/document/Hist_Kline_Download_Intro/)
-
-
