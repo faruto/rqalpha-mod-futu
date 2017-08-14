@@ -76,7 +76,7 @@ run_file(strategy_file_path, config)
 3. 如何修改股票代码、起始资金、起始日期等
 
    参数配置方式遵循rqalpha的参数配置优先级，策略代码中配置 > 命令行参 = run_file传参 > 用户配置文件 > 系统默认配置文件。这里以run_file运行策略为例，在策略代码中设置股票代码，在debug_run_file的config里benchmark可以设置股票池，accounts设置起始资金，start_date, end_date设置起始日期。
-   
+
 4. 如何设置ip
    在init.py中的config里可以配置ip，本地ip: 127.0.0.1，云端ip: 119.29.141.202
 
