@@ -1,0 +1,7 @@
+site_name: rqalpha-futu-mod文档
+pages:
+- [index.md, Home]
+- [install.md, 安装]
+- [usage.md, 使用说明]
+- [qa.md, 注意]
+theme: readthedocs
