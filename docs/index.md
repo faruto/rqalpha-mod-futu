@@ -1,1 +1,1 @@
-此文档介绍rqalpha-mod-futu的安装和使用。
+RQAlpha 对接 futuquant 的扩展 Mod。通过启用该 Mod 来实现港股和美股交易策略的实盘交易。
