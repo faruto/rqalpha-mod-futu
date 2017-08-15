@@ -1,5 +1,4 @@
 # rqalpha_mod_futu安装步骤
-**1. 安装python3.5**
 
 **1. 安装python3.5**
 
