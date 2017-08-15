@@ -102,38 +102,41 @@
           <div role="main">
             <div class="section">
               
-                <p><strong>1. 安装python3.5</strong></p>
-<p>下载<a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-4.4.0-Windows-x86_64.exe">Anaconda</a>，并安装。</p>
+                <p><strong>1. 安装python的Anaconda环境</strong></p>
+<p>下载<a href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-4.4.0-Windows-x86_64.exe">Anaconda 4.4.0</a>，并安装。</p>
 <p><strong>2. 安装rqalpha</strong></p>
 <p>在命令行中输入如下命令</p>
-<pre><code>pip install rqalpha
+<pre><code>pip install -U rqalpha
 </code></pre>
 
-<p><strong>3. 安装futu_api</strong></p>
-<p>在命令行中输入如下命令。</p>
+<p><strong>3. 安装futuquant</strong></p>
+<p>安装可在命令行中输入如下命令：</p>
 <pre><code>pip install futuquant
 </code></pre>
 
-<p>根据<a href="https://futunnopen.github.io/futuquant/document/Futunn_API_Intro/">富途牛牛行情交易API入门指引</a>的指引，搭建富途API环境。</p>
-<p><strong>4. 安装futu_mod</strong></p>
-<pre><code>rqalpha mod install futu # 安装futu mod
-rqalpha mod list #查看当前有哪些mod,如果安装成功，应该会看到futu的mod
-rqalpha mod enable futu #开户futu的mod
-rqalpha mod disable sys_simulation # 关闭sys_simulation
+<ul>
+<li>futuquant提供基于富途牛牛客户端的程序化交易接口以及行情和历史数据。</li>
+<li>根据<a href="https://futunnopen.github.io/futuquant/document/Futunn_API_Intro/">富途牛牛行情交易API入门指引</a>的指引，搭建富途API环境。</li>
+</ul>
+<p><strong>4. 安装rqalpha-mod-rqalpha</strong></p>
+<pre><code>rqalpha mod install futu                # 安装futu mod
+rqalpha mod list                        # 查看当前有哪些mod, 如果安装成功，应该会看到futu的mod
+rqalpha mod enable futu                 # 开启futu的mod
+rqalpha mod disable sys_simulation      # 关闭sys_simulation
 </code></pre>
 
 <p><strong>5. 开始编写策略</strong></p>
-<p>在strategy文件夹中编写你自己的策略文件mystrategy.py。修改debug_run_file.py中的配置如下。</p>
+<p>在examples文件夹中编写你自己的策略文件mystrategy.py。修改debug_run_file.py中的配置如下。</p>
 <pre><code># -*- coding: utf-8 -*-
 
 from rqalpha import run_file
 
 config = {
   &quot;base&quot;: {
-  ... #这部分不用改，按照原来的配置即可
-    &quot;run_type&quot;: &quot;b&quot;, #设为回测
+  ... # 这部分不用改，按照原来的配置即可
+    &quot;run_type&quot;: &quot;b&quot;, # 设为回测
   },
-  ... #这部分不用改，按照原来的配置即可
+  ... # 这部分不用改，按照原来的配置即可
 }
 
 strategy_file_path = &quot;./strategy/mystrategy.py&quot; # 设置策略文件
