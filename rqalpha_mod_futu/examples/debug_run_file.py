@@ -28,7 +28,7 @@ config = {
         "benchmark": "HK.00001",
         "frequency": "1d",
         # 运行类型，`b` 为历史数据回测，`p` 为实时数据模拟交易, `r` 为实时数据实盘交易。
-        "run_type":  "p",
+        "run_type":  "b",
     },
     "extra": {
         "log_level": "verbose",
