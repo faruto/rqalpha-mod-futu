@@ -40,6 +40,7 @@ class FUTUDataSource(AbstractDataSource):
         self._quote_context = quote_context
         # 订阅，得到cache的时候，订阅，拉历史，得到当前数据，push动态更新，去重
         self._quote_context.subscribe(stock_code=self._env.config.base.benchmark, data_type='K_DAY', push=False)
+        self._quote_context.subscribe(stock_code=self._env.config.base.benchmark, data_type='K_1M', push=False)
         self._cache = data_cache._cache
         self._today = None
         self._data_cache = data_cache
@@ -197,8 +198,39 @@ class FUTUDataSource(AbstractDataSource):
 
         :return: `numpy.ndarray` | `dict`
         """
-        if frequency != '1d':
+        if frequency == '1d':
+            return self.get_bar_day(instrument, dt)
+        elif frequency == '1m':
+            return self.get_bar_minute(instrument, dt)
+        else:
             raise NotImplementedError
+
+    def get_bar_minute(self, instrument, dt):
+        if dt is None:
+            dt = datetime.now()
+
+        current_time = time.strftime("%Y%m%d%H%M", time.localtime())
+        dt_time = dt.strftime("%Y%m%d%H%M")
+
+        if dt_time == current_time:  # 判断时间是否是当天，每天都是要清空缓存，所以要先获取历史
+            if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache['history_minute_kline'].keys():
+                ret_code, bar_data = self._get_cur_minute_cache(instrument)
+            else:
+                ret_code, bar_data = 0, self._cache['history_minute_kline'][instrument.order_book_id]
+        elif dt_time != current_time:
+            if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache['history_minute_kline'].keys():
+                ret_code, bar_data = self._get_history_minute_cache(instrument)
+            else:
+                ret_code, bar_data = 0, self._cache['history_minute_kline'][instrument.order_book_id]
+
+        if ret_code == RET_ERROR or bar_data is None:
+            raise Exception("can't get bar data")
+
+        ret_dict = bar_data[bar_data.datetime <= int(dt_time + "00")].iloc[0].to_dict()
+
+        return ret_dict
+
+    def get_bar_day(self, instrument, dt):
         if dt is None:
             dt = datetime.now()
 
@@ -217,11 +249,28 @@ class FUTUDataSource(AbstractDataSource):
                 ret_code, bar_data = 0, self._cache['history_kline'][instrument.order_book_id]
 
         if ret_code == RET_ERROR or bar_data is None:
-            raise NotImplementedError
+            raise Exception("can't get bar data")
 
         ret_dict = bar_data[bar_data.datetime <= int(dt_time + "000000")].iloc[0].to_dict()
 
         return ret_dict
+
+    def _fill_minute_cur_kline_cache_data(self, instrument):
+        order_book_id = instrument.order_book_id
+        for x in range(3):
+            ret_code, ret_data = self._quote_context.get_cur_kline(order_book_id, 1, 'K_1M')
+            if ret_code == 0 and len(ret_data) >= 1:
+                bar_data = ret_data.iloc[-1:].copy()
+                # 时间转换
+                for i in range(len(bar_data['time_key'])):  # 时间转换
+                    bar_data.loc[i, 'time_key'] = int(
+                        bar_data['time_key'][i].replace('-', '').replace(' ', '').replace(':', ''))
+
+                bar_data.rename(columns={'time_key': 'datetime', 'turnover': 'total_turnover'},
+                                inplace=True)  # 将字段名称改为一致的
+                bar_data['volume'] = bar_data['volume'].astype('float64')  # 把成交量的数据类型转为float
+                self._cache['cur_minute_kline'][order_book_id] = bar_data
+                break
 
     def _fill_cur_kline_cache_data(self, instrument):
         order_book_id = instrument.order_book_id
@@ -240,18 +289,76 @@ class FUTUDataSource(AbstractDataSource):
                 self._cache['cur_kline'][order_book_id] = bar_data
                 break
 
+    def _get_cur_minute_cache(self, instrument):
+        ret_code = 0
+        if self._cache['cur_minute_kline'] or instrument.order_book_id not in self._cache['cur_minute_kline'].keys():
+            self._quote_context.subscribe(instrument.order_book_id, "K_1M", push=True)
+            self._quote_context.set_handler(self._data_cache)
+            self._quote_context.start()
+            self._fill_cur_minute_kline_cache_data(instrument)
+        else:
+            return ret_code, self._cache['cur_minute_kline'][instrument.order_book_id]
+        return ret_code, self._cache['cur_minute_kline'][instrument.order_book_id]
+
     def _get_cur_cache(self, instrument):
         ret_code = 0
         if self._cache['cur_kline'] or instrument.order_book_id not in self._cache['cur_kline'].keys():
             self._quote_context.subscribe(instrument.order_book_id, "K_DAY", push=True)
-            # self._quote_context.set_handler(CurKlineTest(self._cache))
             self._quote_context.set_handler(self._data_cache)
             self._quote_context.start()
-            # self._cache['cur_kline'] = CurKlineTest(self._cache)._cur_kline
             self._fill_cur_kline_cache_data(instrument)
         else:
             return ret_code, self._cache['cur_kline'][instrument.order_book_id]
         return ret_code, self._cache['cur_kline'][instrument.order_book_id]
+
+    def _get_history_minute_cache(self, instrument):
+        one_day = timedelta(days=1)
+        bar_data = pd.DataFrame()
+        if self._cache['history_minute_kline'] is None:
+            self._cache['history_minute_kline'] = {}
+        self._cache['history_minute_kline'][instrument.order_book_id] = pd.DataFrame()
+        trading_days = None
+        if 'HK.' in instrument.order_book_id:
+            ret, trading_days = self._quote_context.get_trading_days('HK')
+            if ret != RET_OK:
+                raise Exception("can't get hk trading days")
+        elif 'US.' in instrument.order_book_id:
+            ret, trading_days = self._quote_context.get_trading_days('US')
+            if ret != RET_OK:
+                raise Exception("can't get us trading days")
+        else:
+            raise NotImplementedError
+        for trading_day in trading_days:
+            if bar_data is None:
+                break
+            begin_date = datetime.strptime(trading_day, '%Y-%m-%d')
+            end_date = begin_date + one_day
+            for i in range(3):
+                ret_code, bar_data = self._quote_context.get_history_kline(instrument.order_book_id,
+                                                                           start=begin_date.strftime('%Y-%m-%d'),
+                                                                           end=end_date.strftime('%Y-%m-%d'),
+                                                                           ktype='K_1M')
+                if ret_code != RET_ERROR:
+                    break
+                else:
+                    time.sleep(0.1)
+            if ret_code == RET_ERROR or isinstance(bar_data, str):
+                print("get history minute kline error")
+
+            if bar_data.empty:
+                return ret_code, self._cache['history_minute_kline'][instrument.order_book_id]
+            end_date = begin_date
+            # 对数据做处理先做处理再存
+            del bar_data['code']  # 去掉code
+            for i in range(len(bar_data)):  # 时间转换
+                bar_data.loc[i, 'time_key'] = int(
+                    bar_data['time_key'][i].replace('-', '').replace(' ', '').replace(':', ''))
+            bar_data['volume'] = bar_data['volume'].astype('float64')    # 把成交量的数据类型转为float
+            bar_data.rename(columns={'time_key': 'datetime', 'turnover': 'total_turnover'}, inplace=True)  # 将字段名称改为一致的
+            bar_data = bar_data[::-1]
+
+            self._cache['history_minute_kline'][instrument.order_book_id] = self._cache['history_minute_kline'][instrument.order_book_id].append(bar_data)
+        return ret_code, self._cache['history_minute_kline'][instrument.order_book_id]
 
     def _get_history_cache(self, instrument):
         end_date = date.today().replace(month=12, day=31)
@@ -288,6 +395,7 @@ class FUTUDataSource(AbstractDataSource):
             bar_data = bar_data[::-1]
 
             self._cache['history_kline'][instrument.order_book_id] = self._cache['history_kline'][instrument.order_book_id].append(bar_data)
+        return ret_code, self._cache['history_kline'][instrument.order_book_id]
 
     def history_bars(self, instrument, bar_count, frequency, fields, dt, skip_suspended=True,
                      include_now=False, adjust_type='pre', adjust_orig=None):
@@ -327,9 +435,42 @@ class FUTUDataSource(AbstractDataSource):
         :return: `numpy.ndarray`
 
         """
-        if frequency != '1d' or not skip_suspended:
+        if not skip_suspended:
             raise NotImplementedError
+        if frequency == '1d':
+            return self.history_bars_days(instrument, bar_count, fields, dt, skip_suspended,
+                                          include_now, adjust_type, adjust_orig)
+        elif frequency == '1m':
+            return self.history_bars_minutes(instrument, bar_count, fields, dt, skip_suspended,
+                                             include_now, adjust_type, adjust_orig)
 
+    def history_bars_minutes(self, instrument, bar_count, fields, dt, skip_suspended=True,
+                             include_now=False, adjust_type='pre', adjust_orig=None):
+        datetime_dt = int(dt.strftime("%Y%m%d%H%M%S"))
+
+        if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache['history_minute_kline'].keys():
+            ret_code, bar_data = self._get_history_minute_cache(instrument)
+            datetime_rows = self._cache['history_minute_kline'][instrument.order_book_id]
+            if skip_suspended:
+                bar_data = datetime_rows[datetime_rows['datetime'] <= datetime_dt].sort_values(['datetime'])[
+                           -bar_count:]
+        else:  # 不为空的时候，在历史缓存里寻找对应范围的数据就可以了
+            datetime_rows = self._cache['history_minute_kline'][instrument.order_book_id]
+            if skip_suspended:
+                ret_code = 0
+                bar_data = datetime_rows[datetime_rows['datetime'] <= datetime_dt].sort_values(['datetime'])[
+                           -bar_count:]
+
+        if ret_code == RET_ERROR or bar_data is None:
+            raise NotImplementedError
+        else:
+            if isinstance(fields, str):
+                return bar_data if fields is None else bar_data[fields].as_matrix()
+            else:
+                raise NotImplementedError
+
+    def history_bars_days(self, instrument, bar_count, fields, dt, skip_suspended=True,
+                          include_now=False, adjust_type='pre', adjust_orig=None):
         datetime_dt = int(dt.strftime("%Y%m%d%H%M%S"))
 
         if self._cache['history_kline'] is None or instrument.order_book_id not in self._cache['history_kline'].keys():
@@ -563,6 +704,8 @@ class DataCache(CurKlineHandlerBase):
         self._cache["trading_days"] = None
         self._cache["market_snapshot"] = None
         self._cache['cur_kline'] = {}
+        self._cache['history_minute_kline'] = None
+        self._cache['cur_minute_kline'] = {}
 
     def remove_all(self):
         """删除全部"""
@@ -576,6 +719,7 @@ class DataCache(CurKlineHandlerBase):
         else:
             if ret_data.empty:
                 self._cache['cur_kline'] = {}
+                self._cache['cur_minute_kline'] ={}
             else:
                 bar_data = ret_data.iloc[-1:].copy()
                 del bar_data['code'], bar_data['k_type']  # 删除推送数据多出来的字段
@@ -587,5 +731,12 @@ class DataCache(CurKlineHandlerBase):
                                 inplace=True)  # 将字段名称改为一致的
                 bar_data['volume'] = bar_data['volume'].astype('float64')  # 把成交量的数据类型转为float
 
-                self._cache['cur_kline'][ret_data['code'][0]]=bar_data
-                return ret_code, self._cache['cur_kline'][ret_data['code'][0]]
+                if ret_data['k_type'][0]=='K_DAY':
+                    self._cache['cur_kline'][ret_data['code'][0]]=bar_data
+                    return ret_code, self._cache['cur_kline'][ret_data['code'][0]]
+                elif ret_data['k_type'][0]=='K_1M':
+                    self._cache['cur_minute_kline'][ret_data['code'][0]]=bar_data
+                    return ret_code, self._cache['cur_minute_kline'][ret_data['code'][0]]
+                else:
+                    print('unimplemented k_type')
+                    raise NotImplementedError

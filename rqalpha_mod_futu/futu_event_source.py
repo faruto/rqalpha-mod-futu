@@ -54,7 +54,6 @@ class FUTUEventForBacktest(AbstractEventSource):
     @staticmethod
     def _get_stock_trading_minutes(trading_date):
         trading_minutes = set()
-        # current_dt = datetime.combine(trading_date, time(9, 30))
         current_dt = trading_date.replace(hour=9, minute=30)
         am_end_dt = current_dt.replace(hour=12, minute=00)
         pm_start_dt = current_dt.replace(hour=13, minute=1)
@@ -150,49 +149,8 @@ class FUTUEventForBacktest(AbstractEventSource):
 
                 dt = _date.replace(hour=17, minute=0)
                 yield Event(EVENT.SETTLEMENT, calendar_dt=dt, trading_dt=dt)
-        elif frequency == "tick":
-            raise NotImplementedError()
-            data_proxy = self._env.data_proxy
-            for day in data_proxy.get_trading_dates(start_date, end_date):
-                _date = day.to_pydatetime()
-                last_tick = None
-                last_dt = None
-                dt_before_day_trading = _date.replace(hour=8, minute=30)
-                while True:
-                    for tick in data_proxy.get_merge_ticks(self._get_universe(), _date, last_dt):
-                        # find before trading time
-                        if last_tick is None:
-                            last_tick = tick
-                            dt = tick.datetime
-                            before_trading_dt = dt - timedelta(minutes=30)
-                            yield Event(EVENT.BEFORE_TRADING, calendar_dt=before_trading_dt,
-                                        trading_dt=before_trading_dt)
-
-                        dt = tick.datetime
-
-                        if dt < dt_before_day_trading:
-                            trading_dt = dt.replace(
-                                year=_date.year, month=_date.month, day=_date.day)
-                        else:
-                            trading_dt = dt
-
-                        yield Event(EVENT.TICK, calendar_dt=dt, trading_dt=trading_dt, tick=tick)
-
-                        if self._universe_changed:
-                            self._universe_changed = False
-                            last_dt = dt
-                            break
-                    else:
-                        break
-
-                dt = _date.replace(hour=15, minute=30)
-                yield Event(EVENT.AFTER_TRADING, calendar_dt=dt, trading_dt=dt)
-
-                dt = _date.replace(hour=17, minute=0)
-                yield Event(EVENT.SETTLEMENT, calendar_dt=dt, trading_dt=dt)
         else:
-            raise NotImplementedError(
-                _("Frequency {} is not support.").format(frequency))
+            raise NotImplementedError
 
 
 class TimePeriod(Enum):

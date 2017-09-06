@@ -32,7 +32,7 @@ class FUTUStockPosition(BasePosition):
         "sold_value",
         "average_cost"
     ]
-    stock_t1 = True
+    stock_t1 = False
 
     def __init__(self, order_book_id):
         super(FUTUStockPosition, self).__init__(order_book_id)
