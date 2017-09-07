@@ -25,8 +25,7 @@ from .futu_position import FUTUStockPosition
 from .futu_utils import *
 
 from rqalpha.interface import AbstractMod
-from rqalpha.const import DEFAULT_ACCOUNT_TYPE
-
+from .const import FUTU_ACCOUNT_TYPE
 from futuquant import OpenQuoteContext
 
 
@@ -67,7 +66,7 @@ class FUTUMod(AbstractMod):
         self._set_broker()
         self._set_data_source()
         self._set_event_source()
-        self._env.set_position_model(DEFAULT_ACCOUNT_TYPE.STOCK.name, FUTUStockPosition)
+        self._env.set_position_model(FUTU_ACCOUNT_TYPE.FUTU_STOCK.name, FUTUStockPosition)
         print(">>> FUTUMod.start_up")
 
     def tear_down(self, success, exception=None):

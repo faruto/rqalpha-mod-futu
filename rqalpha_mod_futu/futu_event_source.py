@@ -19,10 +19,9 @@ from .futu_market_state import *
 
 from rqalpha.interface import AbstractEventSource
 from rqalpha.events import Event, EVENT
-from rqalpha.const import DEFAULT_ACCOUNT_TYPE
+from .const import FUTU_ACCOUNT_TYPE
 from rqalpha.utils import get_account_type
 from rqalpha.utils.datetime_func import convert_int_to_datetime
-from rqalpha.utils.i18n import gettext as _
 from rqalpha.utils.exception import CustomException, CustomError, patch_user_exc
 from rqalpha.utils.logger import system_log
 
@@ -43,7 +42,7 @@ class FUTUEventForBacktest(AbstractEventSource):
 
     def _get_universe(self):
         universe = self._env.get_universe()
-        if len(universe) == 0 and DEFAULT_ACCOUNT_TYPE.STOCK.name not in self._config.base.accounts:
+        if len(universe) == 0 and FUTU_ACCOUNT_TYPE.FUTU_STOCK.name not in self._config.base.accounts:
             error = CustomError()
             error.set_msg(
                 "Current universe is empty. Please use subscribe function before trade")
@@ -73,7 +72,7 @@ class FUTUEventForBacktest(AbstractEventSource):
         trading_minutes = set()
         universe = self._get_universe()
         for order_book_id in universe:
-            if get_account_type(order_book_id) == DEFAULT_ACCOUNT_TYPE.STOCK.name:
+            if get_account_type(order_book_id) == FUTU_ACCOUNT_TYPE.FUTU_STOCK.name:
                 continue
             trading_minutes.update(
                 self._env.data_proxy.get_trading_minutes_for(order_book_id, trading_date))
@@ -82,12 +81,11 @@ class FUTUEventForBacktest(AbstractEventSource):
     def _get_trading_minutes(self, trading_date):
         trading_minutes = set()
         for account_type in self._config.base.accounts:
-            if account_type == DEFAULT_ACCOUNT_TYPE.STOCK.name:
+            if account_type == FUTU_ACCOUNT_TYPE.FUTU_STOCK.name:
                 trading_minutes = trading_minutes.union(
                     self._get_stock_trading_minutes(trading_date))
-            elif account_type == DEFAULT_ACCOUNT_TYPE.FUTURE.name:
-                trading_minutes = trading_minutes.union(
-                    self._get_future_trading_minutes(trading_date))
+            else:
+                raise NotImplementedError
         return sorted(list(trading_minutes))
     # [END] minute event helper
 

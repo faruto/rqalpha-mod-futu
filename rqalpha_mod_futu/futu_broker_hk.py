@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from rqalpha.interface import AbstractBroker
-from rqalpha.const import DEFAULT_ACCOUNT_TYPE
+from .const import FUTU_ACCOUNT_TYPE
 from rqalpha.events import EVENT, Event
 from rqalpha.model.order import *
 from rqalpha.model.base_position import Positions
@@ -227,7 +227,7 @@ class FUTUBrokerHK(AbstractBroker):
                 pass  # 8 = 等待开盘 21= 本地已发送 22=本地已发送，服务器返回下单失败、没产生订单 23=本地已发送，等待服务器返回超时
 
     def _get_futu_positions(self, env):
-        StockPosition = env.get_position_model(DEFAULT_ACCOUNT_TYPE.STOCK.name)
+        StockPosition = env.get_position_model(FUTU_ACCOUNT_TYPE.FUTU_STOCK.name)
         positions = Positions(StockPosition)
         ret, pd_data = self._trade_context.position_list_query(self._trade_envtype)
         if ret != 0:
@@ -252,15 +252,15 @@ class FUTUBrokerHK(AbstractBroker):
         start_date = config.base.start_date
         total_cash = 0
         for account_type, stock_starting_cash in six.iteritems(config.base.accounts):
-            if account_type == DEFAULT_ACCOUNT_TYPE.STOCK.name:
+            if account_type == FUTU_ACCOUNT_TYPE.FUTU_STOCK.name:
                 # stock_starting_cash = config.base.accounts
                 if stock_starting_cash == 0:
                     raise RuntimeError(_(u"stock starting cash can not be 0, using `--stock-starting-cash 1000`"))
                 all_positons = self._get_futu_positions(self._env)
                 if all_positons is None:
                     raise RuntimeError("_init_portfolio fail")
-                StockAccount = self._env.get_account_model(DEFAULT_ACCOUNT_TYPE.STOCK.name)
-                accounts[DEFAULT_ACCOUNT_TYPE.STOCK.name] = StockAccount(stock_starting_cash, all_positons)
+                StockAccount = self._env.get_account_model(FUTU_ACCOUNT_TYPE.FUTU_STOCK.name)
+                accounts[FUTU_ACCOUNT_TYPE.FUTU_STOCK.name] = StockAccount(stock_starting_cash, all_positons)
                 total_cash += stock_starting_cash
             else:
                 raise NotImplementedError
@@ -270,7 +270,7 @@ class FUTUBrokerHK(AbstractBroker):
     def _get_account(self, order_book_id):
         # account = self._env.get_account(order_book_id)
         # for debug
-        account = self._env.portfolio.accounts[DEFAULT_ACCOUNT_TYPE.STOCK.name]
+        account = self._env.portfolio.accounts[FUTU_ACCOUNT_TYPE.FUTU_STOCK.name]
         return account
 
     def _get_futu_order_id(self, order):

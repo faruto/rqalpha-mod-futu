@@ -17,7 +17,8 @@
 
 
 from rqalpha.model.base_position import BasePosition
-from rqalpha.const import DEFAULT_ACCOUNT_TYPE, SIDE
+from rqalpha.const import  SIDE
+from .const import FUTU_ACCOUNT_TYPE
 from rqalpha.environment import Environment
 from rqalpha.utils.logger import user_system_log
 from rqalpha.utils.i18n import gettext as _
@@ -88,7 +89,7 @@ class FUTUStockPosition(BasePosition):
 
     @property
     def type(self):
-        return DEFAULT_ACCOUNT_TYPE.STOCK.name
+        return FUTU_ACCOUNT_TYPE.FUTU_STOCK.name
 
     def split_(self, ratio):
         self._quantity *= ratio
@@ -152,9 +153,9 @@ class FUTUStockPosition(BasePosition):
         [float] 获得该持仓的实时市场价值在总投资组合价值中所占比例，取值范围[0, 1]
         """
         accounts = Environment.get_instance().portfolio.accounts
-        if DEFAULT_ACCOUNT_TYPE.STOCK.name not in accounts:
+        if FUTU_ACCOUNT_TYPE.FUTU_STOCK.name not in accounts:
             return 0
-        total_value = accounts[DEFAULT_ACCOUNT_TYPE.STOCK.name].total_value
+        total_value = accounts[FUTU_ACCOUNT_TYPE.FUTU_STOCK.name].total_value
         return 0 if total_value == 0 else self.market_value / total_value
 
     # ------------------------------------ Abandon Property ------------------------------------
