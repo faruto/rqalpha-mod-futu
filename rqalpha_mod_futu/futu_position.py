@@ -24,7 +24,7 @@ from rqalpha.utils.logger import user_system_log
 from rqalpha.utils.i18n import gettext as _
 
 
-class FUTUStockPosition(BasePosition):
+class FutuStockPosition(BasePosition):
 
     __abandon_properties__ = [
         "bought_quantity",
@@ -36,7 +36,7 @@ class FUTUStockPosition(BasePosition):
     stock_t1 = False
 
     def __init__(self, order_book_id):
-        super(FUTUStockPosition, self).__init__(order_book_id)
+        super(FutuStockPosition, self).__init__(order_book_id)
         self._quantity = 0
         self._avg_price = 0
         # self._non_closable = 0     # 当天买入的不能卖出
