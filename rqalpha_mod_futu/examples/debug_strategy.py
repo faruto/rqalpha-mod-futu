@@ -56,7 +56,7 @@ def handle_bar(context, bar_dict):
     if not context.fired:
         # order_percent并且传入1代表买入该股票并且使其占有投资组合的100%
         # order_percent(context.s1, 1)
-        order_price =bar_dict[context.s1].low
+        order_price = bar_dict[context.s1].low
         ret_order = order_percent(context.s1, 0.1, style=LimitOrder(order_price))
         print("order_percent finish:{}!".format(ret_order))
         context.fired = True

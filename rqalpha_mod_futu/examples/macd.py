@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import talib   # 请自行安装
+import talib  # 请自行安装
 from rqalpha.api import *
 
 
@@ -27,7 +27,7 @@ def handle_bar(context, bar_dict):
     # TODO: 开始编写你的算法吧！
 
     # 读取历史数据，使用sma方式计算均线准确度和数据长度无关，但是在使用ema方式计算均线时建议将历史数据窗口适当放大，结果会更加准确
-    prices = history_bars(context.s1, context.OBSERVATION,'1d','close')
+    prices = history_bars(context.s1, context.OBSERVATION, '1d', 'close')
 
     # 用talib计算MACD取值，得到三个时间序列数组，分别为macd, signal 和 hist
     macd, signal, hist = talib.MACD(prices, context.SHORTPERIOD,

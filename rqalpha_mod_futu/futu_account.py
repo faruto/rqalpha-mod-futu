@@ -11,6 +11,7 @@ from rqalpha.const import SIDE
 from .const import FUTU_ACCOUNT_TYPE
 from .api import order_shares
 
+
 class FutuStockAccount(BaseAccount):
     __abandon_properties__ = []
 

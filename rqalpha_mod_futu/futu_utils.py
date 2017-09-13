@@ -92,11 +92,10 @@ def IsRuntype_Backtest():
 def IsRuntype_RealtimeStrategy():
     """运行模式: 是否实时策略"""
     run_type = Environment.get_instance().config.base.run_type
-    return  run_type == RUN_TYPE.LIVE_TRADING or run_type == RUN_TYPE.PAPER_TRADING
+    return run_type == RUN_TYPE.LIVE_TRADING or run_type == RUN_TYPE.PAPER_TRADING
 
 
 def IsRuntype_RealTrade():
     """运行模式: 是否实盘交易"""
     run_type = Environment.get_instance().config.base.run_type
     return run_type == RUN_TYPE.LIVE_TRADING
-

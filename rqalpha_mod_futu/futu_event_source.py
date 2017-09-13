@@ -30,6 +30,7 @@ from datetime import timedelta, date, datetime
 
 class FUTUEventForBacktest(AbstractEventSource):
     """ 回测用的event source """
+
     def __init__(self, env):
         self._env = env
         self._config = env.config
@@ -87,6 +88,7 @@ class FUTUEventForBacktest(AbstractEventSource):
             else:
                 raise NotImplementedError
         return sorted(list(trading_minutes))
+
     # [END] minute event helper
 
     def events(self, start_date, end_date, frequency):
@@ -161,12 +163,13 @@ class TimePeriod(Enum):
 
 class FUTUEventForRealtime(AbstractEventSource):
     """ 实时策略的event """
+
     def __init__(self, env, mod_config, market_state_source):
         self._env = env
         self._mod_config = mod_config
         fps = int(float(self._mod_config.futu_bar_fps) * 1000)  # 转成毫秒
         self._fps_delta_dt = timedelta(
-            days=0, seconds=fps//1000, microseconds=fps % 1000)
+            days=0, seconds=fps // 1000, microseconds=fps % 1000)
 
         self._before_trading_processed = False
         self._after_trading_processed = False

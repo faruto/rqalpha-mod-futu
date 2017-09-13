@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import talib   # 请自行安装
+import talib  # 请自行安装
 from rqalpha.api import *
 
 
@@ -24,7 +24,7 @@ def handle_bar(context, bar_dict):
 
     # TODO: 开始编写你的算法吧！
     # 因为策略需要用到均线，所以需要读取历史数据
-    prices = history_bars(context.s1, context.LONGPERIOD+1, '1d', 'close')
+    prices = history_bars(context.s1, context.LONGPERIOD + 1, '1d', 'close')
     # 使用talib计算长短两根均线，均线以array的格式表达
     short_avg = talib.SMA(prices, context.SHORTPERIOD)
     long_avg = talib.SMA(prices, context.LONGPERIOD)
@@ -35,7 +35,7 @@ def handle_bar(context, bar_dict):
     # 计算现在portfolio中股票的仓位
     cur_position = context.portfolio.positions[context.s1].quantity
     # 计算现在portfolio中的现金可以购买多少股票
-    shares = context.portfolio.cash/bar_dict[context.s1].close
+    shares = context.portfolio.cash / bar_dict[context.s1].close
 
     # 如果短均线从上往下跌破长均线，也就是在目前的bar短线平均值低于长线平均值，而上一个bar的短线平均值高于长线平均值
     if (short_avg[-1] - long_avg[-1] < 0) and (short_avg[-2] - long_avg[-2] > 0) and (cur_position > 0):

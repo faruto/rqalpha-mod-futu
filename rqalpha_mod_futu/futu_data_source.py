@@ -131,7 +131,7 @@ class FUTUDataSource(AbstractDataSource):
         ret_data['de_listed_date'] = str("2999-12-31")  # 增加一列退市日期
 
         ret_data.rename(columns={'code': 'order_book_id', 'name': 'symbol', 'stock_type': 'type', 'listing_date':
-                        'listed_date', 'lot_size': 'round_lot'}, inplace=True)  # 修改列名
+            'listed_date', 'lot_size': 'round_lot'}, inplace=True)  # 修改列名
         ret_data = ret_data.to_dict(orient='records')  # 转置并转为字典格式
         self._cache['basicinfo_hk'] = ret_data
 
@@ -178,7 +178,7 @@ class FUTUDataSource(AbstractDataSource):
         ret_data['de_listed_date'] = str("2999-12-31")  # 增加一列退市日期
 
         ret_data.rename(columns={'code': 'order_book_id', 'name': 'symbol', 'stock_type': 'type', 'listing_date':
-                        'listed_date', 'lot_size': 'round_lot'}, inplace=True)  # 修改列名
+            'listed_date', 'lot_size': 'round_lot'}, inplace=True)  # 修改列名
         ret_data = ret_data.to_dict(orient='records')  # 转置并转为字典格式
         self._cache['basicinfo_us'] = ret_data
 
@@ -213,12 +213,14 @@ class FUTUDataSource(AbstractDataSource):
         dt_time = dt.strftime("%Y%m%d%H%M")
 
         if dt_time == current_time:  # 判断时间是否是当天，每天都是要清空缓存，所以要先获取历史
-            if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache['history_minute_kline'].keys():
+            if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache[
+                'history_minute_kline'].keys():
                 ret_code, bar_data = self._get_cur_minute_cache(instrument)
             else:
                 ret_code, bar_data = 0, self._cache['history_minute_kline'][instrument.order_book_id]
         elif dt_time != current_time:
-            if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache['history_minute_kline'].keys():
+            if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache[
+                'history_minute_kline'].keys():
                 ret_code, bar_data = self._get_history_minute_cache(instrument)
             else:
                 ret_code, bar_data = 0, self._cache['history_minute_kline'][instrument.order_book_id]
@@ -238,12 +240,14 @@ class FUTUDataSource(AbstractDataSource):
         dt_time = dt.strftime("%Y%m%d")
 
         if dt_time == current_time:  # 判断时间是否是当天，每天都是要清空缓存，所以要先获取历史
-            if self._cache['history_kline'] is None or instrument.order_book_id not in self._cache['history_kline'].keys():
+            if self._cache['history_kline'] is None or instrument.order_book_id not in self._cache[
+                'history_kline'].keys():
                 ret_code, bar_data = self._get_cur_cache(instrument)
             else:
                 ret_code, bar_data = 0, self._cache['history_kline'][instrument.order_book_id]
         elif dt_time != current_time:
-            if self._cache['history_kline'] is None or instrument.order_book_id not in self._cache['history_kline'].keys():
+            if self._cache['history_kline'] is None or instrument.order_book_id not in self._cache[
+                'history_kline'].keys():
                 ret_code, bar_data = self._get_history_cache(instrument)
             else:
                 ret_code, bar_data = 0, self._cache['history_kline'][instrument.order_book_id]
@@ -353,11 +357,12 @@ class FUTUDataSource(AbstractDataSource):
             for i in range(len(bar_data)):  # 时间转换
                 bar_data.loc[i, 'time_key'] = int(
                     bar_data['time_key'][i].replace('-', '').replace(' ', '').replace(':', ''))
-            bar_data['volume'] = bar_data['volume'].astype('float64')    # 把成交量的数据类型转为float
+            bar_data['volume'] = bar_data['volume'].astype('float64')  # 把成交量的数据类型转为float
             bar_data.rename(columns={'time_key': 'datetime', 'turnover': 'total_turnover'}, inplace=True)  # 将字段名称改为一致的
             bar_data = bar_data[::-1]
 
-            self._cache['history_minute_kline'][instrument.order_book_id] = self._cache['history_minute_kline'][instrument.order_book_id].append(bar_data)
+            self._cache['history_minute_kline'][instrument.order_book_id] = self._cache['history_minute_kline'][
+                instrument.order_book_id].append(bar_data)
         return ret_code, self._cache['history_minute_kline'][instrument.order_book_id]
 
     def _get_history_cache(self, instrument):
@@ -390,11 +395,12 @@ class FUTUDataSource(AbstractDataSource):
             for i in range(len(bar_data)):  # 时间转换
                 bar_data.loc[i, 'time_key'] = int(
                     bar_data['time_key'][i].replace('-', '').replace(' ', '').replace(':', ''))
-            bar_data['volume'] = bar_data['volume'].astype('float64')    # 把成交量的数据类型转为float
+            bar_data['volume'] = bar_data['volume'].astype('float64')  # 把成交量的数据类型转为float
             bar_data.rename(columns={'time_key': 'datetime', 'turnover': 'total_turnover'}, inplace=True)  # 将字段名称改为一致的
             bar_data = bar_data[::-1]
 
-            self._cache['history_kline'][instrument.order_book_id] = self._cache['history_kline'][instrument.order_book_id].append(bar_data)
+            self._cache['history_kline'][instrument.order_book_id] = self._cache['history_kline'][
+                instrument.order_book_id].append(bar_data)
         return ret_code, self._cache['history_kline'][instrument.order_book_id]
 
     def history_bars(self, instrument, bar_count, frequency, fields, dt, skip_suspended=True,
@@ -448,7 +454,8 @@ class FUTUDataSource(AbstractDataSource):
                              include_now=False, adjust_type='pre', adjust_orig=None):
         datetime_dt = int(dt.strftime("%Y%m%d%H%M%S"))
 
-        if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache['history_minute_kline'].keys():
+        if self._cache['history_minute_kline'] is None or instrument.order_book_id not in self._cache[
+            'history_minute_kline'].keys():
             ret_code, bar_data = self._get_history_minute_cache(instrument)
             datetime_rows = self._cache['history_minute_kline'][instrument.order_book_id]
             if skip_suspended:
@@ -477,12 +484,14 @@ class FUTUDataSource(AbstractDataSource):
             ret_code, bar_data = self._get_history_cache(instrument)
             datetime_rows = self._cache['history_kline'][instrument.order_book_id]
             if skip_suspended:
-                bar_data = datetime_rows[datetime_rows['datetime'] <= datetime_dt].sort_values(['datetime'])[-bar_count:]
+                bar_data = datetime_rows[datetime_rows['datetime'] <= datetime_dt].sort_values(['datetime'])[
+                           -bar_count:]
         else:  # 不为空的时候，在历史缓存里寻找对应范围的数据就可以了
             datetime_rows = self._cache['history_kline'][instrument.order_book_id]
             if skip_suspended:
                 ret_code = 0
-                bar_data = datetime_rows[datetime_rows['datetime'] <= datetime_dt].sort_values(['datetime'])[-bar_count:]
+                bar_data = datetime_rows[datetime_rows['datetime'] <= datetime_dt].sort_values(['datetime'])[
+                           -bar_count:]
 
         if ret_code == RET_ERROR or bar_data is None:
             raise NotImplementedError
@@ -560,7 +569,7 @@ class FUTUDataSource(AbstractDataSource):
 
     def is_suspended(self, order_book_id, dates):
         #  用市场快照 判断一只股票是否停牌
-        if IsRuntype_Backtest() is True:   # 回测
+        if IsRuntype_Backtest() is True:  # 回测
             return [(False) for d in dates]
         elif IsRuntype_RealTrade() is True or IsRuntype_RealtimeStrategy() is True:  # 实盘
             result = []
@@ -568,7 +577,8 @@ class FUTUDataSource(AbstractDataSource):
                 if i.date() != date.today():
                     result.append(False)
                 else:
-                    if self._cache["market_snapshot"] is None or order_book_id not in self._cache["market_snapshot"].keys():
+                    if self._cache["market_snapshot"] is None or order_book_id not in self._cache[
+                        "market_snapshot"].keys():
                         ret_code, ret_data = self._get_snapshot_cache(order_book_id)
                     else:
                         ret_code, ret_data = 0, self._cache["market_snapshot"][order_book_id]
@@ -719,7 +729,7 @@ class DataCache(CurKlineHandlerBase):
         else:
             if ret_data.empty:
                 self._cache['cur_kline'] = {}
-                self._cache['cur_minute_kline'] ={}
+                self._cache['cur_minute_kline'] = {}
             else:
                 bar_data = ret_data.iloc[-1:].copy()
                 del bar_data['code'], bar_data['k_type']  # 删除推送数据多出来的字段
@@ -731,11 +741,11 @@ class DataCache(CurKlineHandlerBase):
                                 inplace=True)  # 将字段名称改为一致的
                 bar_data['volume'] = bar_data['volume'].astype('float64')  # 把成交量的数据类型转为float
 
-                if ret_data['k_type'][0]=='K_DAY':
-                    self._cache['cur_kline'][ret_data['code'][0]]=bar_data
+                if ret_data['k_type'][0] == 'K_DAY':
+                    self._cache['cur_kline'][ret_data['code'][0]] = bar_data
                     return ret_code, self._cache['cur_kline'][ret_data['code'][0]]
-                elif ret_data['k_type'][0]=='K_1M':
-                    self._cache['cur_minute_kline'][ret_data['code'][0]]=bar_data
+                elif ret_data['k_type'][0] == 'K_1M':
+                    self._cache['cur_minute_kline'][ret_data['code'][0]] = bar_data
                     return ret_code, self._cache['cur_minute_kline'][ret_data['code'][0]]
                 else:
                     print('unimplemented k_type')

@@ -17,7 +17,7 @@
 
 
 from rqalpha.model.base_position import BasePosition
-from rqalpha.const import  SIDE
+from rqalpha.const import SIDE
 from .const import FUTU_ACCOUNT_TYPE
 from rqalpha.environment import Environment
 from rqalpha.utils.logger import user_system_log
@@ -25,7 +25,6 @@ from rqalpha.utils.i18n import gettext as _
 
 
 class FutuStockPosition(BasePosition):
-
     __abandon_properties__ = [
         "bought_quantity",
         "sold_quantity",
@@ -40,7 +39,7 @@ class FutuStockPosition(BasePosition):
         self._quantity = 0
         self._avg_price = 0
         # self._non_closable = 0     # 当天买入的不能卖出
-        self._frozen = 0            # 冻结量
+        self._frozen = 0  # 冻结量
         self._transaction_cost = 0  # 交易费用
 
     def get_state(self):

@@ -2,7 +2,7 @@
 
 from rqalpha.api import *
 import numpy as np
-import talib    # 请自行安装
+import talib  # 请自行安装
 import math
 
 
@@ -14,8 +14,8 @@ def get_extreme(array_high_price_result, array_low_price_result):
     return [max_result, min_result]
 
 
-def get_atr_and_unit(atr_array_result,  atr_length_result, portfolio_value_result):
-    atr = atr_array_result[atr_length_result-1]
+def get_atr_and_unit(atr_array_result, atr_length_result, portfolio_value_result):
+    atr = atr_array_result[atr_length_result - 1]
     unit = math.floor(portfolio_value_result * .01 / atr)
     return [atr, unit]
 
@@ -44,10 +44,10 @@ def init(context):
 
 def handle_bar(context, bar_dict):
     portfolio_value = context.portfolio.portfolio_value
-    high_price = history_bars(context.s, context.open_observe_time+1, '1d', 'high')
-    low_price_for_atr = history_bars(context.s, context.open_observe_time+1, '1d', 'low')
-    low_price_for_extreme = history_bars(context.s, context.close_observe_time+1, '1d', 'low')
-    close_price = history_bars(context.s, context.open_observe_time+2, '1d', 'close')
+    high_price = history_bars(context.s, context.open_observe_time + 1, '1d', 'high')
+    low_price_for_atr = history_bars(context.s, context.open_observe_time + 1, '1d', 'low')
+    low_price_for_extreme = history_bars(context.s, context.close_observe_time + 1, '1d', 'low')
+    close_price = history_bars(context.s, context.open_observe_time + 2, '1d', 'close')
     close_price_for_atr = close_price[:-1]
 
     atr_array = talib.ATR(high_price, low_price_for_atr, close_price_for_atr, timeperiod=context.atr_time)
@@ -67,15 +67,15 @@ def handle_bar(context, bar_dict):
     market_value = context.portfolio.market_value
 
     if (cur_position > 0 and
-            bar_dict[context.s].last < get_stop_price(context.first_open_price, context.units_hold, atr)):
+                bar_dict[context.s].last < get_stop_price(context.first_open_price, context.units_hold, atr)):
         context.trading_signal = 'stop'
     else:
         if cur_position > 0 and bar_dict[context.s].last < minn:
             context.trading_signal = 'exit'
         else:
             if (bar_dict[context.s].last > context.max_add and context.units_hold != 0 and
-                    context.units_hold < context.units_hold_max and
-                    available_cash > bar_dict[context.s].last*context.unit):
+                        context.units_hold < context.units_hold_max and
+                        available_cash > bar_dict[context.s].last * context.unit):
                 context.trading_signal = 'entry_add'
             else:
                 if bar_dict[context.s].last > maxx and context.units_hold == 0:
@@ -90,10 +90,10 @@ def handle_bar(context, bar_dict):
 
     if (context.trading_signal != context.pre_trading_signal or
             (context.units_hold < context.units_hold_max and context.units_hold > 1) or
-            context.trading_signal == 'stop'):
+                context.trading_signal == 'stop'):
         if context.trading_signal == 'entry':
             context.quantity = context.unit
-            if available_cash > bar_dict[context.s].last*context.quantity:
+            if available_cash > bar_dict[context.s].last * context.quantity:
                 order_shares(context.s, context.quantity)
                 context.first_open_price = bar_dict[context.s].last
                 context.units_hold = 1
